@@ -7,6 +7,11 @@ import { HarmonicSetBuilder, HarmonicTrack } from "../services/harmonicSetBuilde
 import { UsbSyncManager, SyncTarget, SyncTrackInfo } from "../services/usbSyncManager.js";
 import { CuePointEngine } from "../services/cuePointEngine.js";
 import { DjPromptCreatorService } from "../services/djPromptCreatorService.js";
+import { LibraryStorageService } from "../services/libraryStorageService.js";
+import { LibraryTrack } from "../types/library.js";
+import path from "node:path";
+import { createWriteStream } from "node:fs";
+import { pipeline } from "node:stream/promises";
 import { GenerateReleaseInputSchema, SoundcloudReleaseSchema } from "../types/release.js";
 
 export async function registerRoutes(app: FastifyInstance) {
@@ -185,5 +190,113 @@ export async function registerRoutes(app: FastifyInstance) {
       return reply.send({ success: true, data: { cues, count: cues.length } });
     }
     return reply.status(400).send({ success: false, error: "Unsupported module" });
+  });
+
+  // DJ Music Library: Haal tracks op met optionele filters
+  app.get("/api/library/tracks", async (req, reply) => {
+    const query = req.query as { crateId?: string; search?: string };
+    let tracks = await LibraryStorageService.getAllTracks();
+    if (query.crateId && query.crateId !== "crate_all") {
+      tracks = tracks.filter((t) => t.crateIds?.includes(query.crateId!));
+    }
+    if (query.search) {
+      const q = query.search.toLowerCase();
+      tracks = tracks.filter((t) => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
+    }
+    return reply.send({ success: true, data: tracks });
+  });
+
+  // DJ Music Library: Upload audiobestand en bewaar in library
+  app.post("/api/library/upload", async (req, reply) => {
+    const data = await req.file();
+    if (!data) {
+      return reply.status(400).send({ success: false, error: "No audio file uploaded" });
+    }
+    const safeFilename = `${Date.now()}_${data.filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const uploadPath = path.join(process.cwd(), "uploads", "tracks", safeFilename);
+    await pipeline(data.file, createWriteStream(uploadPath));
+
+    let artist = "Unknown Artist";
+    let title = data.filename.replace(/\.[^/.]+$/, "");
+    if (title.includes(" - ")) {
+      const parts = title.split(" - ");
+      artist = parts[0].trim();
+      title = parts.slice(1).join(" - ").trim();
+    }
+
+    const defaultCues = CuePointEngine.calculateHotCues(300, 126);
+    const energyScore = CuePointEngine.calculateEnergyScore(126, "House");
+    const peaks = Array.from({ length: 100 }, () => Math.round((0.2 + Math.random() * 0.8) * 100) / 100);
+
+    const track: LibraryTrack = {
+      id: `trk_${Date.now()}`,
+      title,
+      artist,
+      durationSec: 300,
+      bpm: 126,
+      camelotKey: "8A",
+      energyScore,
+      danceability: 0.85,
+      mood: "Peak Time",
+      cuePoints: defaultCues,
+      waveformPeaks: peaks,
+      audioUrl: `/audio/${safeFilename}`,
+      fileName: data.filename,
+      fileSize: 0,
+      crateIds: ["crate_all"],
+      addedAt: new Date().toISOString()
+    };
+
+    const saved = await LibraryStorageService.saveTrack(track);
+    return reply.send({ success: true, data: saved });
+  });
+
+  // DJ Music Library: Bewaar of update track metadata
+  app.post("/api/library/tracks", async (req, reply) => {
+    const body = req.body as LibraryTrack;
+    if (!body?.title) {
+      return reply.status(400).send({ success: false, error: "Track title is required" });
+    }
+    const saved = await LibraryStorageService.saveTrack(body);
+    return reply.send({ success: true, data: saved });
+  });
+
+  // DJ Music Library: Verwijder track
+  app.delete("/api/library/tracks/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const ok = await LibraryStorageService.deleteTrack(id);
+    return reply.send({ success: ok });
+  });
+
+  // DJ Music Library: Crates beheer
+  app.get("/api/library/crates", async (_req, reply) => {
+    const crates = await LibraryStorageService.getAllCrates();
+    return reply.send({ success: true, data: crates });
+  });
+
+  app.post("/api/library/crates", async (req, reply) => {
+    const body = req.body as { name: string; color?: string };
+    if (!body?.name) {
+      return reply.status(400).send({ success: false, error: "Crate name is required" });
+    }
+    const crate = await LibraryStorageService.createCrate(body.name, body.color);
+    return reply.send({ success: true, data: crate });
+  });
+
+  app.delete("/api/library/crates/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const ok = await LibraryStorageService.deleteCrate(id);
+    return reply.send({ success: ok });
+  });
+
+  app.post("/api/library/crates/assign", async (req, reply) => {
+    const body = req.body as { trackId: string; crateId: string; action: "add" | "remove" };
+    if (!body?.trackId || !body?.crateId) {
+      return reply.status(400).send({ success: false, error: "trackId and crateId are required" });
+    }
+    const ok = body.action === "remove"
+      ? await LibraryStorageService.removeTrackFromCrate(body.trackId, body.crateId)
+      : await LibraryStorageService.addTrackToCrate(body.trackId, body.crateId);
+    return reply.send({ success: ok });
   });
 }

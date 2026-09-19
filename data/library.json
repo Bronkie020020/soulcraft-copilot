@@ -1,0 +1,29 @@
+{
+  "tracks": [],
+  "crates": [
+    {
+      "id": "crate_all",
+      "name": "Alle Tracks",
+      "color": "#f97316",
+      "createdAt": "2026-09-19T02:16:08.059Z"
+    },
+    {
+      "id": "crate_peak",
+      "name": "Peak Time Club",
+      "color": "#ef4444",
+      "createdAt": "2026-09-19T02:16:08.061Z"
+    },
+    {
+      "id": "crate_deep",
+      "name": "Deep & Jackin",
+      "color": "#3b82f6",
+      "createdAt": "2026-09-19T02:16:08.061Z"
+    },
+    {
+      "id": "crate_warmup",
+      "name": "Warm Up Vibes",
+      "color": "#10b981",
+      "createdAt": "2026-09-19T02:16:08.061Z"
+    }
+  ]
+}

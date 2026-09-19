@@ -31,6 +31,9 @@ import {
 } from "lucide-react";
 import SplashScreen from "./components/SplashScreen.js";
 import DjPromptCreator from "./components/DjPromptCreator.js";
+import DjMusicLibrary from "./components/DjMusicLibrary.js";
+import DjMusicPlayer from "./components/DjMusicPlayer.js";
+import { LibraryTrack } from "../types/library.js";
 
 interface CuePoint {
   id: string;
@@ -94,7 +97,8 @@ const DEFAULT_CUES: CuePoint[] = [
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState<"soundcloud" | "harmonic" | "usb" | "dj-prompt">("soundcloud");
+  const [activeTab, setActiveTab] = useState<"soundcloud" | "harmonic" | "usb" | "dj-prompt" | "library">("soundcloud");
+  const [activePlayerTrack, setActivePlayerTrack] = useState<LibraryTrack | null>(null);
   const [releases, setReleases] = useState<SoundcloudRelease[]>([]);
   const [activeRelease, setActiveRelease] = useState<SoundcloudRelease | null>(null);
   const [loading, setLoading] = useState(false);
@@ -380,6 +384,17 @@ export default function App() {
           >
             <Wand2 className="w-3.5 h-3.5" />
             Ultimate DJ Creator
+          </button>
+          <button
+            onClick={() => setActiveTab("library")}
+            className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
+              activeTab === "library"
+                ? "bg-orange-600 text-white shadow-md shadow-orange-600/30"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Music className="w-3.5 h-3.5" />
+            DJ Music Library
           </button>
         </div>
       </header>
@@ -877,7 +892,21 @@ export default function App() {
 
         {/* TAB 4: ULTIMATE DJ PROMPT CREATOR (LEXICON DJ ULTIMATE & UPC) */}
         {activeTab === "dj-prompt" && <DjPromptCreator />}
+
+        {/* TAB 5: DJ MUSIC LIBRARY (OWN MUSIC & SCAN ENGINE) */}
+        {activeTab === "library" && (
+          <DjMusicLibrary
+            onPlayTrack={(t) => setActivePlayerTrack(t)}
+            activeTrackId={activePlayerTrack?.id}
+          />
+        )}
       </div>
+
+      {/* BUILT-IN INTERACTIVE DJ MUSIC PLAYER */}
+      <DjMusicPlayer
+        currentTrack={activePlayerTrack}
+        onClose={() => setActivePlayerTrack(null)}
+      />
     </div>
   );
 }

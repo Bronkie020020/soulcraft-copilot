@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifyStatic from "@fastify/static";
+import multipart from "@fastify/multipart";
 import path from "node:path";
 import fs from "node:fs";
 import { registerRoutes } from "./routes.js";
@@ -26,6 +27,12 @@ export async function buildServer() {
     methods: ["GET", "POST", "PUT", "DELETE"],
   });
 
+  await app.register(multipart, {
+    limits: {
+      fileSize: 150 * 1024 * 1024, // max 150MB per audio file
+    },
+  });
+
   // 1. Artwork & public static assets
   const publicDir = path.resolve(process.cwd(), "public");
   await app.register(fastifyStatic, {
@@ -39,6 +46,15 @@ export async function buildServer() {
   await app.register(fastifyStatic, {
     root: artworkDir,
     prefix: "/artwork/",
+    decorateReply: false,
+  });
+
+  // Specifically serve /audio prefix for imported DJ tracks
+  const audioDir = path.resolve(process.cwd(), "uploads", "tracks");
+  fs.mkdirSync(audioDir, { recursive: true });
+  await app.register(fastifyStatic, {
+    root: audioDir,
+    prefix: "/audio/",
     decorateReply: false,
   });
 
