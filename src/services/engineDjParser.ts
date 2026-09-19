@@ -1,9 +1,10 @@
 import { EngineTrackItem } from "../types/engineDj.js";
+import { CuePointEngine } from "./cuePointEngine.js";
 
 export class EngineDjParser {
   /**
    * Converteert ruwe invoer (M3U playlist, Denon session export of simpele tekstregels)
-   * naar een gestructureerde lijst van tracks inclusief berekende SoundCloud timestamps.
+   * naar een gestructureerde lijst van tracks inclusief berekende SoundCloud timestamps en Hot Cues.
    */
   static parseTracklist(
     rawText: string,
@@ -21,6 +22,7 @@ export class EngineDjParser {
 
     const tracks: EngineTrackItem[] = [];
     let currentSeconds = 0;
+    const camelotCycle = ["8A", "9A", "10A", "11A", "11B", "12A", "1A", "2A", "3A", "4A", "5A", "6A", "7A"];
 
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
@@ -47,13 +49,25 @@ export class EngineDjParser {
       const minutes = Math.floor(currentSeconds / 60);
       const seconds = Math.floor(currentSeconds % 60);
       const timestampFormatted = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      const durationSec = Math.round(avgDurationMin * 60);
+
+      // Bereken automatische hot cues en energy score (v9.0)
+      const cues = CuePointEngine.calculateHotCues(durationSec, 126);
+      const energyScore = CuePointEngine.calculateEnergyScore(126, title);
+      const camelotKey = camelotCycle[i % camelotCycle.length];
 
       tracks.push({
         index: tracks.length + 1,
         artist,
         title,
         timestamp: timestampFormatted,
-        durationSeconds: Math.round(avgDurationMin * 60),
+        durationSeconds: durationSec,
+        bpm: 126,
+        camelotKey,
+        energyScore,
+        danceability: 0.88,
+        mood: "Peak Time Club",
+        cuePoints: cues
       });
 
       if (calculateTimestamps) {

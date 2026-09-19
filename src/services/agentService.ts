@@ -105,13 +105,13 @@ export class ReleaseCopilotEngine {
         "13:30 | Floorplan - Never Grow Old",
         "18:00 | Catz 'n Dogz - Jack (Club Tool)"
       ].join("\n"),
-      parsedTracks: tracks.length > 0 ? tracks : [
-        { index: 1, artist: "Dennis Quin", title: "Chant Groove", timestamp: "00:00", durationSeconds: 270 },
-        { index: 2, artist: "Kerri Chandler", title: "Atmosphere (Jerome Sydenham Remix)", timestamp: "04:30", durationSeconds: 270 },
-        { index: 3, artist: "Soulcraft", title: "Midnight Jack (Original Mix)", timestamp: "09:00", durationSeconds: 270 },
-        { index: 4, artist: "Floorplan", title: "Never Grow Old", timestamp: "13:30", durationSeconds: 270 },
-        { index: 5, artist: "Catz 'n Dogz", title: "Jack (Club Tool)", timestamp: "18:00", durationSeconds: 270 }
-      ],
+      parsedTracks: tracks.length > 0 ? tracks : EngineDjParser.parseTracklist([
+        "Dennis Quin - Chant Groove",
+        "Kerri Chandler - Atmosphere (Jerome Sydenham Remix)",
+        "Soulcraft - Midnight Jack (Original Mix)",
+        "Floorplan - Never Grow Old",
+        "Catz 'n Dogz - Jack (Club Tool)"
+      ].join("\n"), true, 4.5).tracks,
       artworkPrompts: [
         {
           id: "art_1",

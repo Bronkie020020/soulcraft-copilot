@@ -5,6 +5,7 @@ import { StorageService } from "../services/storageService.js";
 import { EngineDjParser } from "../services/engineDjParser.js";
 import { HarmonicSetBuilder, HarmonicTrack } from "../services/harmonicSetBuilder.js";
 import { UsbSyncManager, SyncTarget, SyncTrackInfo } from "../services/usbSyncManager.js";
+import { CuePointEngine } from "../services/cuePointEngine.js";
 import { GenerateReleaseInputSchema, SoundcloudReleaseSchema } from "../types/release.js";
 
 export async function registerRoutes(app: FastifyInstance) {
@@ -99,7 +100,15 @@ export async function registerRoutes(app: FastifyInstance) {
     return reply.send({ success: true, data: { setlist: planned, transitions } });
   });
 
-  // v8.0 USB & DJ Software Sync
+  // v9.0 BPM-Dex Cue Point Detector
+  app.post("/api/tracks/cues", async (req, reply) => {
+    const body = req.body as { durationSec?: number; bpm?: number; genre?: string };
+    const cues = CuePointEngine.calculateHotCues(body?.durationSec || 270, body?.bpm || 126);
+    const energyScore = CuePointEngine.calculateEnergyScore(body?.bpm || 126, body?.genre || "House");
+    return reply.send({ success: true, data: { cues, energyScore } });
+  });
+
+  // v9.0 USB & DJ Software Sync (with Rekordbox XML)
   app.post("/api/usb/sync", async (req, reply) => {
     const body = req.body as { tracks: SyncTrackInfo[]; playlistName: string; target: SyncTarget };
     if (!body?.tracks || !body?.target) {
@@ -111,5 +120,14 @@ export async function registerRoutes(app: FastifyInstance) {
     } catch (err: any) {
       return reply.status(500).send({ success: false, error: err.message });
     }
+  });
+
+  // v9.0 Rekordbox XML Export download
+  app.post("/api/export/rekordbox-xml", async (req, reply) => {
+    const body = req.body as { tracks: SyncTrackInfo[]; playlistName?: string };
+    const xml = UsbSyncManager.generateRekordboxXml(body?.tracks || [], body?.playlistName || "Soulcraft_Mix");
+    reply.header("Content-Type", "application/xml");
+    reply.header("Content-Disposition", `attachment; filename="${body?.playlistName || 'Soulcraft_Mix'}_rekordbox.xml"`);
+    return reply.send(xml);
   });
 }

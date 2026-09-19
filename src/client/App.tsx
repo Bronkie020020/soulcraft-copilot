@@ -24,9 +24,20 @@ import {
   Compass,
   FolderSync,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  Bookmark,
+  FileCode
 } from "lucide-react";
 import SplashScreen from "./components/SplashScreen.js";
+
+interface CuePoint {
+  id: string;
+  name: string;
+  timeSec: number;
+  timestamp: string;
+  color: string;
+  type: string;
+}
 
 interface ArtworkPrompt {
   id: string;
@@ -45,6 +56,9 @@ interface EngineTrackItem {
   durationSeconds?: number;
   bpm?: number;
   key?: string;
+  camelotKey?: string;
+  energyScore?: number;
+  cuePoints?: CuePoint[];
 }
 
 interface SoundcloudRelease {
@@ -68,6 +82,14 @@ interface SoundcloudRelease {
   status: string;
 }
 
+const DEFAULT_CUES: CuePoint[] = [
+  { id: "c1", name: "Intro", timeSec: 0, timestamp: "00:00", color: "#10b981", type: "intro" },
+  { id: "c2", name: "Drop 1", timeSec: 45, timestamp: "00:45", color: "#ef4444", type: "drop" },
+  { id: "c3", name: "Breakdown", timeSec: 135, timestamp: "02:15", color: "#3b82f6", type: "breakdown" },
+  { id: "c4", name: "Drop 2", timeSec: 195, timestamp: "03:15", color: "#f97316", type: "drop" },
+  { id: "c5", name: "Outro", timeSec: 255, timestamp: "04:15", color: "#8b5cf6", type: "outro" }
+];
+
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<"soundcloud" | "harmonic" | "usb">("soundcloud");
@@ -79,7 +101,7 @@ export default function App() {
   const [renderingArtwork, setRenderingArtwork] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isPlayingSim, setIsPlayingSim] = useState(false);
-  const [playbackProgress, setPlaybackProgress] = useState(28);
+  const [playbackProgress, setPlaybackProgress] = useState(25);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Form State
@@ -89,7 +111,7 @@ export default function App() {
     "Dennis Quin - Chant Groove\nKerri Chandler - Atmosphere (Jerome Sydenham Remix)\nSoulcraft - Midnight Jack (Original Mix)\nFloorplan - Never Grow Old\nCatz 'n Dogz - Jack (Club Tool)"
   );
 
-  // Harmonic Builder State
+  // Harmonic Builder State (v8.0)
   const [harmonicTracks, setHarmonicTracks] = useState([
     { id: "1", title: "Chant Groove", artist: "Dennis Quin", bpm: 125, camelotKey: "8A", energyLevel: 0.7 },
     { id: "2", title: "Atmosphere", artist: "Kerri Chandler", bpm: 126, camelotKey: "9A", energyLevel: 0.8 },
@@ -99,9 +121,9 @@ export default function App() {
   ]);
   const [harmonicTransitions, setHarmonicTransitions] = useState<any[]>([]);
 
-  // USB Sync State
+  // USB Sync State (v9.0)
   const [usbPath, setUsbPath] = useState("E:/");
-  const [targetSoftware, setTargetSoftware] = useState<"ENGINE_DJ" | "REKORDBOX" | "TRAKTOR_PRO_4">("ENGINE_DJ");
+  const [targetSoftware, setTargetSoftware] = useState<"ENGINE_DJ" | "REKORDBOX" | "TRAKTOR_PRO_4">("REKORDBOX");
   const [syncing, setSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState<string | null>(null);
 
@@ -114,7 +136,7 @@ export default function App() {
     let interval: any;
     if (isPlayingSim) {
       interval = setInterval(() => {
-        setPlaybackProgress((prev) => (prev >= 100 ? 0 : prev + 0.5));
+        setPlaybackProgress((prev) => (prev >= 100 ? 0 : prev + 0.4));
       }, 500);
     }
     return () => clearInterval(interval);
@@ -136,7 +158,7 @@ export default function App() {
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setLoadingStatus("Verwerken van set met Gemini structured output...");
+    setLoadingStatus("Verwerken van set met BPM-Dex & Mixed-in-Key analyse...");
     setErrorMsg(null);
     try {
       const res = await fetch("/api/releases/generate", {
@@ -236,7 +258,7 @@ export default function App() {
       });
       const json = await res.json();
       if (json.success) {
-        setSyncSuccess(`Succesvol gesynchroniseerd naar ${json.data.playlistFile}!`);
+        setSyncSuccess(`Succesvol geëxporteerd! Playlist: ${json.data.playlistFile}${json.data.xmlFile ? ` | Rekordbox XML: ${json.data.xmlFile}` : ""}`);
       }
     } finally {
       setSyncing(false);
@@ -253,6 +275,16 @@ export default function App() {
     activeRelease?.artworkPrompts.find((p) => p.generatedImageUrl)?.generatedImageUrl ||
     "/logo.jpg";
 
+  // Hot Cues for current set simulation (using track 1 cues or default)
+  const currentCues: CuePoint[] = activeRelease?.parsedTracks?.[0]?.cuePoints || DEFAULT_CUES;
+  const currentEnergyScore = activeRelease?.parsedTracks?.[0]?.energyScore || 8;
+
+  function jumpToCue(cue: CuePoint) {
+    const totalSimSeconds = 300; // 5 min track
+    const pct = Math.min(100, Math.max(0, (cue.timeSec / totalSimSeconds) * 100));
+    setPlaybackProgress(pct);
+  }
+
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col font-sans relative">
       {/* Startup Splash Screen */}
@@ -260,14 +292,14 @@ export default function App() {
 
       {/* Loading Modal with Custom Logo */}
       {loading && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-4">
           <div className="bg-zinc-950 border border-orange-500/40 rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl shadow-orange-600/30">
             <div className="relative w-28 h-28 mx-auto rounded-2xl overflow-hidden border-2 border-orange-500 shadow-lg shadow-orange-500/40 p-1 bg-black">
               <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover rounded-xl animate-pulse" />
               <div className="absolute inset-0 bg-gradient-to-t from-orange-600/40 via-transparent to-transparent animate-spin-slow pointer-events-none"></div>
             </div>
             <div>
-              <h3 className="text-base font-black text-white tracking-tight">SOULCRAFT COPILOT</h3>
+              <h3 className="text-base font-black text-white tracking-tight">SOULCRAFT COPILOT v9.0</h3>
               <p className="text-xs text-orange-400 font-mono mt-1 flex items-center justify-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 animate-spin" />
                 {loadingStatus}
@@ -283,7 +315,6 @@ export default function App() {
       {/* Studio Header with User Logo */}
       <header className="border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md px-6 py-3 flex flex-wrap items-center justify-between sticky top-0 z-40 gap-4">
         <div className="flex items-center gap-3.5">
-          {/* Logo Badge */}
           <div className="relative h-11 w-11 rounded-xl bg-zinc-900 border border-orange-500/50 overflow-hidden shadow-lg shadow-orange-600/30 flex-shrink-0 group cursor-pointer" onClick={() => setShowSplash(true)}>
             <img src="/logo.jpg" alt="Soulcraft Logo" className="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
             <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-950"></span>
@@ -295,10 +326,10 @@ export default function App() {
                 SOULCRAFT <span className="text-orange-500">STUDIO</span>
               </h1>
               <span className="text-[9px] px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 font-mono border border-orange-500/20 font-bold">
-                AARDBEVING v8.0
+                BPM-DEX v9.0
               </span>
             </div>
-            <p className="text-[11px] text-zinc-400 font-mono">Denon SC Live 2 • Engine DJ & SoundCloud Suite</p>
+            <p className="text-[11px] text-zinc-400 font-mono">Mixed-in-Key Grade • Waveform Hot Cues • Universal DJ Sync</p>
           </div>
         </div>
 
@@ -313,7 +344,7 @@ export default function App() {
             }`}
           >
             <Disc className="w-3.5 h-3.5" />
-            SoundCloud Master
+            SoundCloud Master & Cues
           </button>
           <button
             onClick={() => setActiveTab("harmonic")}
@@ -335,14 +366,14 @@ export default function App() {
             }`}
           >
             <HardDrive className="w-3.5 h-3.5" />
-            USB Sync Center
+            Universal DJ Export (Rekordbox / Engine)
           </button>
         </div>
       </header>
 
       {/* Main Studio Body */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* TAB 1: SOUNDCLOUD MASTER */}
+        {/* TAB 1: SOUNDCLOUD MASTER & HOT CUES */}
         {activeTab === "soundcloud" && (
           <>
             {/* Left Sidebar */}
@@ -353,7 +384,7 @@ export default function App() {
                     <Sliders className="w-4 h-4 text-orange-400" />
                     Engine DJ Set Invoer
                   </span>
-                  <span className="text-[10px] font-mono text-zinc-500">SC LIVE 2</span>
+                  <span className="text-[10px] font-mono text-zinc-500">v9.0 CUES</span>
                 </h2>
 
                 {errorMsg && (
@@ -393,7 +424,7 @@ export default function App() {
                         className="text-[10px] text-orange-400 hover:text-orange-300 font-mono flex items-center gap-1"
                       >
                         <RefreshCw className={`w-2.5 h-2.5 ${parsing ? "animate-spin" : ""}`} />
-                        Bereken Timestamps
+                        Bereken Timestamps & Cues
                       </button>
                     </div>
                     <textarea
@@ -411,7 +442,7 @@ export default function App() {
                     className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-600/20 disabled:opacity-50 transition"
                   >
                     <Sparkles className="w-4 h-4" />
-                    Compileer Release Kit (v8.0)
+                    Compileer Release Kit (v9.0)
                   </button>
                 </form>
               </div>
@@ -448,7 +479,7 @@ export default function App() {
               </div>
             </aside>
 
-            {/* Right Stage: SoundCloud Player Sim */}
+            {/* Right Stage: Interactive SoundCloud Player + Hot Cue Markers */}
             <main className="flex-1 p-6 lg:p-8 overflow-y-auto space-y-6">
               {activeRelease ? (
                 <div className="max-w-5xl mx-auto space-y-6">
@@ -463,9 +494,18 @@ export default function App() {
                           {isPlayingSim ? <Pause className="w-7 h-7 fill-current" /> : <Play className="w-7 h-7 fill-current ml-1" />}
                         </button>
                         <div>
-                          <span className="text-[11px] font-mono text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-0.5 rounded-full inline-block">
-                            Live SoundCloud Simulation
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-mono text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                              Live SoundCloud & Cue Simulation
+                            </span>
+
+                            {/* BPM-Dex Energy Score Badge (1-10) */}
+                            <span className="text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                              <Flame className="w-3.5 h-3.5 text-amber-400 fill-current" />
+                              Energy Level: {currentEnergyScore}/10
+                            </span>
+                          </div>
+
                           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight mt-1.5">
                             {activeRelease.selectedTitle}
                           </h2>
@@ -484,36 +524,84 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Waveform Scrubber */}
-                    <div className="mt-6 space-y-1.5 relative z-10">
-                      <div
-                        className="h-14 w-full flex items-end gap-[2px] cursor-pointer group py-1"
-                        onClick={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setPlaybackProgress(((e.clientX - rect.left) / rect.width) * 100);
-                        }}
-                      >
-                        {Array.from({ length: 96 }).map((_, i) => {
-                          const height = Math.min(100, Math.max(18, Math.sin(i * 0.28) * 38 + Math.cos(i * 0.7) * 30 + 52));
-                          const isPast = (i / 96) * 100 <= playbackProgress;
-                          return (
-                            <div
-                              key={i}
-                              style={{ height: `${height}%` }}
-                              className={`flex-1 rounded-[1px] transition-all duration-75 ${
-                                isPast ? "bg-[#f50]" : "bg-zinc-700 hover:bg-zinc-400 group-hover:opacity-90"
-                              }`}
-                            />
-                          );
-                        })}
+                    {/* Waveform Scrubber with Hot Cue Flags */}
+                    <div className="mt-6 space-y-2 relative z-10">
+                      <div className="relative">
+                        {/* Waveform Bars */}
+                        <div
+                          className="h-14 w-full flex items-end gap-[2px] cursor-pointer group py-1"
+                          onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setPlaybackProgress(((e.clientX - rect.left) / rect.width) * 100);
+                          }}
+                        >
+                          {Array.from({ length: 96 }).map((_, i) => {
+                            const height = Math.min(100, Math.max(18, Math.sin(i * 0.28) * 38 + Math.cos(i * 0.7) * 30 + 52));
+                            const isPast = (i / 96) * 100 <= playbackProgress;
+                            return (
+                              <div
+                                key={i}
+                                style={{ height: `${height}%` }}
+                                className={`flex-1 rounded-[1px] transition-all duration-75 ${
+                                  isPast ? "bg-[#f50]" : "bg-zinc-700 hover:bg-zinc-400 group-hover:opacity-90"
+                                }`}
+                              />
+                            );
+                          })}
+                        </div>
+
+                        {/* Visual Cue Markers on Waveform */}
+                        <div className="absolute top-0 inset-x-0 h-full pointer-events-none">
+                          {currentCues.map((cue) => {
+                            const pct = (cue.timeSec / 300) * 100;
+                            return (
+                              <div
+                                key={cue.id}
+                                style={{ left: `${pct}%` }}
+                                className="absolute top-0 bottom-0 w-[2px] pointer-events-auto cursor-pointer flex flex-col items-center"
+                                onClick={() => jumpToCue(cue)}
+                                title={`Spring naar ${cue.name} (${cue.timestamp})`}
+                              >
+                                <div
+                                  style={{ backgroundColor: cue.color }}
+                                  className="text-[9px] font-mono text-black font-extrabold px-1.5 py-0.5 rounded shadow-md transform -translate-y-2 hover:scale-110 transition"
+                                >
+                                  {cue.name}
+                                </div>
+                                <div style={{ backgroundColor: cue.color }} className="w-full flex-1 opacity-80"></div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
 
-                      <div className="flex justify-between text-[11px] font-mono text-zinc-500 pt-1">
-                        <span className="text-orange-400">
-                          {String(Math.floor((playbackProgress * 36) / 60)).padStart(2, "0")}:
-                          {String(Math.floor((playbackProgress * 36) % 60)).padStart(2, "0")}
-                        </span>
-                        <span>60:00</span>
+                      {/* Cue Quick Jump Controls */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-1 mr-1">
+                            <Bookmark className="w-3 h-3 text-orange-400" /> Hot Cues:
+                          </span>
+                          {currentCues.map((cue) => (
+                            <button
+                              key={cue.id}
+                              onClick={() => jumpToCue(cue)}
+                              style={{ borderColor: `${cue.color}60` }}
+                              className="text-[10px] font-mono px-2 py-1 rounded bg-zinc-900/80 hover:bg-zinc-800 border transition flex items-center gap-1"
+                            >
+                              <span style={{ backgroundColor: cue.color }} className="w-2 h-2 rounded-full inline-block"></span>
+                              <span className="font-bold text-zinc-200">{cue.name}</span>
+                              <span className="text-zinc-500">({cue.timestamp})</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-500">
+                          <span className="text-orange-400">
+                            {String(Math.floor((playbackProgress * 36) / 60)).padStart(2, "0")}:
+                            {String(Math.floor((playbackProgress * 36) % 60)).padStart(2, "0")}
+                          </span>
+                          <span>60:00</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -567,7 +655,7 @@ export default function App() {
                         <div className="flex items-center justify-between">
                           <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                             <Music className="w-4 h-4 text-orange-400" />
-                            SoundCloud Timestamps
+                            SoundCloud Timestamps & Cue List
                           </h4>
                           <button onClick={() => copy(activeRelease.tracklistFormatted, "tl")} className="text-xs font-mono text-zinc-400 hover:text-white flex items-center gap-1">
                             {copiedKey === "tl" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -613,7 +701,7 @@ export default function App() {
                 <div>
                   <h2 className="text-lg font-black text-white flex items-center gap-2">
                     <Compass className="w-5 h-5 text-orange-400" />
-                    Harmonic Pathfinding & Camelot Wheel Planner (v8.0)
+                    Harmonic Pathfinding & Camelot Wheel Planner (v9.0)
                   </h2>
                   <p className="text-xs text-zinc-400 font-mono mt-0.5">
                     Berekent de vloeiendste toonsoort-transities en energy boost sprongen voor je Denon set.
@@ -650,8 +738,9 @@ export default function App() {
                           <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-orange-500/10 text-orange-300 border border-orange-500/30">
                             {track.camelotKey}
                           </span>
-                          <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900 px-2 py-1 rounded">
-                            Energy: {Math.round(track.energyLevel * 100)}%
+                          <span className="text-[10px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded font-bold flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-amber-400 fill-current" />
+                            Level {Math.round(track.energyLevel * 10)}/10
                           </span>
                         </div>
                       </div>
@@ -678,17 +767,17 @@ export default function App() {
           </main>
         )}
 
-        {/* TAB 3: USB SYNC CENTER (v8.0) */}
+        {/* TAB 3: UNIVERSAL DJ EXPORT (REKORDBOX / ENGINE DJ) */}
         {activeTab === "usb" && (
           <main className="flex-1 p-6 lg:p-8 overflow-y-auto space-y-6 max-w-4xl mx-auto">
             <div className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-5">
               <div>
                 <h2 className="text-lg font-black text-white flex items-center gap-2">
                   <HardDrive className="w-5 h-5 text-orange-400" />
-                  Universal USB & DJ Software Sync Center (v8.0)
+                  Universal DJ Export Center (Pioneer Rekordbox & Denon Engine)
                 </h2>
                 <p className="text-xs text-zinc-400 font-mono mt-0.5">
-                  Synchroniseer M3U8 playlists direct met geformatteerde USB-sticks voor Denon SC Live 2 en Pioneer Rekordbox.
+                  Exporteer playlists inclusief alle Hot Cues (Intro, Drop 1, Breakdown, Drop 2, Outro) en Camelot toonsoorten.
                 </p>
               </div>
 
@@ -716,19 +805,6 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button
                       type="button"
-                      onClick={() => setTargetSoftware("ENGINE_DJ")}
-                      className={`p-3 rounded-xl border text-left text-xs transition ${
-                        targetSoftware === "ENGINE_DJ"
-                          ? "bg-orange-600/20 border-orange-500 text-white"
-                          : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      <div className="font-bold text-orange-400">Denon Engine DJ</div>
-                      <div className="text-[10px] text-zinc-500 mt-1">SC Live 2 Standalone</div>
-                    </button>
-
-                    <button
-                      type="button"
                       onClick={() => setTargetSoftware("REKORDBOX")}
                       className={`p-3 rounded-xl border text-left text-xs transition ${
                         targetSoftware === "REKORDBOX"
@@ -736,8 +812,25 @@ export default function App() {
                           : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                       }`}
                     >
-                      <div className="font-bold text-orange-400">Pioneer Rekordbox</div>
-                      <div className="text-[10px] text-zinc-500 mt-1">PIONEER Folder Sync</div>
+                      <div className="font-bold text-orange-400 flex items-center gap-1.5">
+                        <FileCode className="w-3.5 h-3.5" /> Pioneer Rekordbox
+                      </div>
+                      <div className="text-[10px] text-zinc-500 mt-1">XML Export met Hot Cues</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setTargetSoftware("ENGINE_DJ")}
+                      className={`p-3 rounded-xl border text-left text-xs transition ${
+                        targetSoftware === "ENGINE_DJ"
+                          ? "bg-orange-600/20 border-orange-500 text-white"
+                          : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      <div className="font-bold text-orange-400 flex items-center gap-1.5">
+                        <HardDrive className="w-3.5 h-3.5" /> Denon Engine DJ
+                      </div>
+                      <div className="text-[10px] text-zinc-500 mt-1">SC Live 2 Standalone</div>
                     </button>
 
                     <button
@@ -749,8 +842,8 @@ export default function App() {
                           : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
                       }`}
                     >
-                      <div className="font-bold text-orange-400">Traktor Pro 4</div>
-                      <div className="text-[10px] text-zinc-500 mt-1">Universal M3U8 Playlist</div>
+                      <div className="font-bold text-orange-400">Traktor Pro 4 / Serato</div>
+                      <div className="text-[10px] text-zinc-500 mt-1">M3U8 Playlist Structuur</div>
                     </button>
                   </div>
                 </div>
@@ -762,7 +855,7 @@ export default function App() {
                   className="w-full py-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold rounded-lg text-xs shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 transition"
                 >
                   <FolderSync className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
-                  {syncing ? "Bezig met exporteren..." : "Exporteer Playlist naar USB"}
+                  {syncing ? "Bezig met exporteren..." : "Exporteer naar DJ Library (XML / M3U8)"}
                 </button>
               </div>
             </div>

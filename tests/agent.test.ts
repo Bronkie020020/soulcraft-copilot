@@ -94,4 +94,62 @@ describe("EngineDjParser", () => {
     expect(tracks).toEqual([]);
     expect(formattedString).toBe("");
   });
+
+  it("enriches tracks with BPM-Dex Hot Cues, Camelot Keys and 1-10 Energy Scores", () => {
+    const input = "Floorplan - Never Grow Old";
+    const { tracks } = EngineDjParser.parseTracklist(input, true, 5);
+
+    expect(tracks.length).toBe(1);
+    const track = tracks[0];
+    expect(track.energyScore).toBeGreaterThanOrEqual(1);
+    expect(track.energyScore).toBeLessThanOrEqual(10);
+    expect(track.camelotKey).toBeDefined();
+    expect(track.cuePoints).toBeDefined();
+    expect(track.cuePoints.length).toBe(5);
+
+    // Verify cue point colors & types according to BPM-Dex spec
+    const types = track.cuePoints.map(c => c.type);
+    expect(types).toContain("intro");
+    expect(types).toContain("drop");
+    expect(types).toContain("breakdown");
+    expect(types).toContain("outro");
+
+    const introCue = track.cuePoints.find(c => c.type === "intro");
+    expect(introCue?.color).toBe("#10b981");
+  });
+});
+
+describe("Rekordbox XML & USB Sync Engine", () => {
+  it("generates compliant Rekordbox XML with POSITION_MARK hot cues", async () => {
+    const { UsbSyncManager } = await import("../src/services/usbSyncManager.js");
+    const testTracks = [
+      {
+        index: 1,
+        artist: "Dennis Quin",
+        title: "Chant Groove",
+        timestamp: "00:00",
+        durationSeconds: 300,
+        bpm: 126,
+        camelotKey: "8A",
+        energyScore: 8,
+        danceability: 0.85,
+        mood: "Peak Time",
+        cuePoints: [
+          { id: "cue_1", name: "Intro Cue", timeSec: 0, timestamp: "00:00", color: "#10b981", type: "intro" as const },
+          { id: "cue_2", name: "Drop 1", timeSec: 60, timestamp: "01:00", color: "#ef4444", type: "drop" as const }
+        ]
+      }
+    ];
+
+    const xml = UsbSyncManager.generateRekordboxXml(testTracks, "Test Playlist");
+    expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
+    expect(xml).toContain('<DJ_PLAYLISTS Version="1.0.0">');
+    expect(xml).toContain('<COLLECTION Entries="1">');
+    expect(xml).toContain('Artist="Dennis Quin"');
+    expect(xml).toContain('Tonality="8A"');
+    expect(xml).toContain('<POSITION_MARK Name="Intro Cue"');
+    expect(xml).toContain('Num="0"');
+    expect(xml).toContain('Num="1"');
+    expect(xml).toContain('<NODE Name="Test Playlist" Type="1"');
+  });
 });
