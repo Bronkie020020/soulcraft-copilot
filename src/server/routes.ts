@@ -3,6 +3,8 @@ import { ReleaseCopilotEngine } from "../services/agentService.js";
 import { ImageService } from "../services/imageService.js";
 import { StorageService } from "../services/storageService.js";
 import { EngineDjParser } from "../services/engineDjParser.js";
+import { HarmonicSetBuilder, HarmonicTrack } from "../services/harmonicSetBuilder.js";
+import { UsbSyncManager, SyncTarget, SyncTrackInfo } from "../services/usbSyncManager.js";
 import { GenerateReleaseInputSchema, SoundcloudReleaseSchema } from "../types/release.js";
 
 export async function registerRoutes(app: FastifyInstance) {
@@ -80,5 +82,34 @@ export async function registerRoutes(app: FastifyInstance) {
     const { id } = req.params as { id: string };
     const ok = await StorageService.deleteRelease(id);
     return reply.send({ success: ok });
+  });
+
+  // v8.0 Harmonic Set Planner
+  app.post("/api/harmonic/plan", async (req, reply) => {
+    const body = req.body as { tracks: HarmonicTrack[]; startTrackId?: string };
+    if (!body?.tracks || !Array.isArray(body.tracks)) {
+      return reply.status(400).send({ success: false, error: "tracks array is required" });
+    }
+    const planned = HarmonicSetBuilder.buildOptimalPath(body.tracks, body.startTrackId);
+    const transitions = [];
+    for (let i = 0; i < planned.length - 1; i++) {
+      const rule = HarmonicSetBuilder.checkCompatibility(planned[i].camelotKey, planned[i + 1].camelotKey);
+      transitions.push(rule);
+    }
+    return reply.send({ success: true, data: { setlist: planned, transitions } });
+  });
+
+  // v8.0 USB & DJ Software Sync
+  app.post("/api/usb/sync", async (req, reply) => {
+    const body = req.body as { tracks: SyncTrackInfo[]; playlistName: string; target: SyncTarget };
+    if (!body?.tracks || !body?.target) {
+      return reply.status(400).send({ success: false, error: "tracks and target are required" });
+    }
+    try {
+      const result = await UsbSyncManager.syncPlaylist(body.tracks, body.playlistName || "Soulcraft_Set", body.target);
+      return reply.send({ success: true, data: result });
+    } catch (err: any) {
+      return reply.status(500).send({ success: false, error: err.message });
+    }
   });
 }

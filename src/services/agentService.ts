@@ -15,7 +15,7 @@ export class ReleaseCopilotEngine {
       try {
         const baseLlm = new ChatGoogleGenerativeAI({
           apiKey: env.GEMINI_API_KEY,
-          modelName: "gemini-1.5-pro",
+          modelName: "gemini-1.5-flash",
           temperature: 0.35,
         });
         this.model = baseLlm.withStructuredOutput(SoundcloudReleaseSchema);
