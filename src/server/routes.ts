@@ -6,6 +6,7 @@ import { EngineDjParser } from "../services/engineDjParser.js";
 import { HarmonicSetBuilder, HarmonicTrack } from "../services/harmonicSetBuilder.js";
 import { UsbSyncManager, SyncTarget, SyncTrackInfo } from "../services/usbSyncManager.js";
 import { CuePointEngine } from "../services/cuePointEngine.js";
+import { DjPromptCreatorService } from "../services/djPromptCreatorService.js";
 import { GenerateReleaseInputSchema, SoundcloudReleaseSchema } from "../types/release.js";
 
 export async function registerRoutes(app: FastifyInstance) {
@@ -129,5 +130,60 @@ export async function registerRoutes(app: FastifyInstance) {
     reply.header("Content-Type", "application/xml");
     reply.header("Content-Disposition", `attachment; filename="${body?.playlistName || 'Soulcraft_Mix'}_rekordbox.xml"`);
     return reply.send(xml);
+  });
+
+  // Ultimate DJ Prompt Creator: Analyze Intake
+  app.post("/api/dj-prompt/analyze", async (req, reply) => {
+    const body = req.body as { intake: string };
+    if (!body?.intake) {
+      return reply.status(400).send({ success: false, error: "intake text is required" });
+    }
+    const analysis = DjPromptCreatorService.analyzeIntake(body.intake);
+    return reply.send({ success: true, data: analysis });
+  });
+
+  // Ultimate DJ Prompt Creator: Generate Expert Prompt
+  app.post("/api/dj-prompt/generate", async (req, reply) => {
+    const body = req.body as {
+      intake: string;
+      category?: string;
+      answers: Record<string, string>;
+      selectedTracks?: string[];
+    };
+    if (!body?.intake) {
+      return reply.status(400).send({ success: false, error: "intake is required" });
+    }
+    const result = DjPromptCreatorService.generateExpertPrompt({
+      intake: body.intake,
+      category: body.category || "FULL_OVERHAUL",
+      answers: body.answers || {},
+      selectedTracks: body.selectedTracks
+    });
+    return reply.send({ success: true, data: result });
+  });
+
+  // Ultimate DJ Prompt Creator: Execute Direct Fix / Module
+  app.post("/api/dj-prompt/execute", async (req, reply) => {
+    const body = req.body as {
+      module: "tag-cleanup" | "smart-cues" | "key-conversion";
+      tracks?: string[];
+      durationSec?: number;
+      bpm?: number;
+    };
+    if (body.module === "tag-cleanup") {
+      const tracksToClean = body.tracks && body.tracks.length > 0 ? body.tracks : [
+        "01 - Dennis Quin - Chant Groove (://downloadmp3.com)",
+        "02. Kerri Chandler feat. Jerome - Atmosphere [Official Video]",
+        "103_Soulcraft - Midnight Jack (Original Mix) (www.zippyshare.com)",
+        "04. Floorplan - Never Grow Old [HD]",
+        "Dennis Quin - Chant Groove"
+      ];
+      const cleaned = DjPromptCreatorService.cleanTrackTags(tracksToClean);
+      return reply.send({ success: true, data: { tracks: cleaned, count: cleaned.length } });
+    } else if (body.module === "smart-cues") {
+      const cues = DjPromptCreatorService.generate8PointSmartCues(body.durationSec || 300, body.bpm || 126);
+      return reply.send({ success: true, data: { cues, count: cues.length } });
+    }
+    return reply.status(400).send({ success: false, error: "Unsupported module" });
   });
 }

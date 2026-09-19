@@ -26,9 +26,11 @@ import {
   Flame,
   CheckCircle2,
   Bookmark,
-  FileCode
+  FileCode,
+  Wand2
 } from "lucide-react";
 import SplashScreen from "./components/SplashScreen.js";
+import DjPromptCreator from "./components/DjPromptCreator.js";
 
 interface CuePoint {
   id: string;
@@ -92,7 +94,7 @@ const DEFAULT_CUES: CuePoint[] = [
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState<"soundcloud" | "harmonic" | "usb">("soundcloud");
+  const [activeTab, setActiveTab] = useState<"soundcloud" | "harmonic" | "usb" | "dj-prompt">("soundcloud");
   const [releases, setReleases] = useState<SoundcloudRelease[]>([]);
   const [activeRelease, setActiveRelease] = useState<SoundcloudRelease | null>(null);
   const [loading, setLoading] = useState(false);
@@ -367,6 +369,17 @@ export default function App() {
           >
             <HardDrive className="w-3.5 h-3.5" />
             Universal DJ Export (Rekordbox / Engine)
+          </button>
+          <button
+            onClick={() => setActiveTab("dj-prompt")}
+            className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
+              activeTab === "dj-prompt"
+                ? "bg-orange-600 text-white shadow-md shadow-orange-600/30"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Wand2 className="w-3.5 h-3.5" />
+            Ultimate DJ Creator
           </button>
         </div>
       </header>
@@ -861,6 +874,9 @@ export default function App() {
             </div>
           </main>
         )}
+
+        {/* TAB 4: ULTIMATE DJ PROMPT CREATOR (LEXICON DJ ULTIMATE & UPC) */}
+        {activeTab === "dj-prompt" && <DjPromptCreator />}
       </div>
     </div>
   );
