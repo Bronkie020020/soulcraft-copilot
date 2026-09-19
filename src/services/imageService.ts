@@ -1,0 +1,167 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import pino from "pino";
+import { env } from "../config/env.js";
+
+const logger = pino({ level: env.LOG_LEVEL });
+const ARTWORK_DIR = path.resolve(process.cwd(), "public", "artwork");
+
+export class ImageService {
+  private static isInitialized = false;
+
+  private async ensureDir() {
+    if (ImageService.isInitialized) return;
+    try {
+      await fs.mkdir(ARTWORK_DIR, { recursive: true });
+      await this.ensureFallbackSvg();
+      ImageService.isInitialized = true;
+    } catch (err) {
+      logger.error({ err }, "Failed to initialize artwork directory");
+    }
+  }
+
+  private async ensureFallbackSvg() {
+    const fallbackPath = path.join(ARTWORK_DIR, "fallback.svg");
+    try {
+      await fs.access(fallbackPath);
+    } catch {
+      const svg = this.renderCoverSvg("Soulcraft Live Session", "Underground Club Tape");
+      await fs.writeFile(fallbackPath, svg, "utf-8");
+    }
+  }
+
+  async generateCoverArtwork(promptText: string, releaseId: string): Promise<string> {
+    await this.ensureDir();
+    logger.info({ releaseId, promptText }, "Generating 1:1 cover artwork...");
+
+    // 1. Check if Gemini / Imagen 3 API is available
+    if (env.GEMINI_API_KEY && env.GEMINI_API_KEY !== "your_gemini_api_key_here") {
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+        if ((ai as any).models && typeof (ai as any).models.generateImages === "function") {
+          const response = await (ai as any).models.generateImages({
+            model: "imagen-3.0-generate-002",
+            prompt: `Vinyl cover art, 1:1 aspect ratio: ${promptText}`,
+            config: {
+              numberOfImages: 1,
+              aspectRatio: "1:1",
+              outputMimeType: "image/jpeg"
+            }
+          });
+
+          if (response?.generatedImages?.[0]?.image?.imageBytes) {
+            const buffer = Buffer.from(response.generatedImages[0].image.imageBytes, "base64");
+            const filename = `cover_${releaseId}_${Date.now()}.jpg`;
+            await fs.writeFile(path.join(ARTWORK_DIR, filename), buffer);
+            logger.info({ filename }, "Imagen 3 cover generated successfully");
+            return `/artwork/${filename}`;
+          }
+        }
+      } catch (genErr: any) {
+        logger.warn({ msg: genErr.message }, "Imagen generation skipped/failed, using dynamic SVG cover generator");
+      }
+    }
+
+    // 2. High-grade club aesthetic SVG cover generation
+    const titleMatch = promptText.match(/(?:style|mood|vibe|theme)?:?\s*([^,.\n]+)/i);
+    const subtitle = titleMatch ? titleMatch[1].slice(0, 35) : "SOULCRAFT UNDERGROUND";
+    const filename = `cover_${releaseId}_${Date.now()}.svg`;
+    const svgContent = this.renderCoverSvg(subtitle, promptText.slice(0, 80));
+
+    await fs.writeFile(path.join(ARTWORK_DIR, filename), svgContent, "utf-8");
+    return `/artwork/${filename}`;
+  }
+
+  private renderCoverSvg(title: string, subtitle: string): string {
+    const seed = Math.floor(Math.random() * 1000);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#271912"/>
+      <stop offset="45%" stop-color="#140d0a"/>
+      <stop offset="100%" stop-color="#050507"/>
+    </radialGradient>
+    <radialGradient id="amberGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff5500" stop-opacity="0.85"/>
+      <stop offset="40%" stop-color="#ea580c" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="neonBeam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#b91c1c" stop-opacity="0.4"/>
+    </linearGradient>
+    <filter id="noise" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" result="noise"/>
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.07 0" />
+      <feComposite in2="SourceGraphic" in="gl" operator="in" />
+    </filter>
+  </defs>
+
+  <!-- Dark Club Background -->
+  <rect width="1000" height="1000" fill="url(#bgGrad)"/>
+
+  <!-- Amber Club Glow Center -->
+  <circle cx="500" cy="500" r="420" fill="url(#amberGlow)" opacity="0.65"/>
+
+  <!-- Vinyl Record Grooves Overlay -->
+  <g opacity="0.3" stroke="#f97316" stroke-width="1.5" fill="none">
+    <circle cx="500" cy="500" r="460" stroke-dasharray="8 4"/>
+    <circle cx="500" cy="500" r="410"/>
+    <circle cx="500" cy="500" r="360" stroke-dasharray="14 6"/>
+    <circle cx="500" cy="500" r="310"/>
+    <circle cx="500" cy="500" r="260" stroke-dasharray="5 5"/>
+    <circle cx="500" cy="500" r="210"/>
+    <circle cx="500" cy="500" r="160" stroke-dasharray="12 4"/>
+    <circle cx="500" cy="500" r="110"/>
+  </g>
+
+  <!-- Center Label Centerpiece -->
+  <circle cx="500" cy="500" r="115" fill="#0c0a09" stroke="#f97316" stroke-width="3"/>
+  <circle cx="500" cy="500" r="16" fill="#f97316"/>
+
+  <!-- Geometric Soundcraft Branding Elements -->
+  <rect x="70" y="70" width="860" height="860" fill="none" stroke="#f97316" stroke-width="1.5" opacity="0.25"/>
+  <line x1="70" y1="140" x2="930" y2="140" stroke="#f97316" stroke-width="1" opacity="0.2"/>
+  <line x1="70" y1="860" x2="930" y2="860" stroke="#f97316" stroke-width="1" opacity="0.2"/>
+
+  <!-- Top Headers -->
+  <text x="90" y="115" fill="#ea580c" font-family="'JetBrains Mono', monospace, sans-serif" font-size="16" font-weight="700" letter-spacing="4">SOULCRAFT // SOUNDCLOUD SESSIONS</text>
+  <text x="910" y="115" text-anchor="end" fill="#71717a" font-family="'JetBrains Mono', monospace, sans-serif" font-size="14" letter-spacing="2">DENON SC LIVE 2 DIRECT</text>
+
+  <!-- Waveform Visual Bar Accents -->
+  <g transform="translate(90, 780)" opacity="0.85">
+    <rect x="0" y="10" width="4" height="40" fill="#f97316"/>
+    <rect x="10" y="0" width="4" height="50" fill="#ea580c"/>
+    <rect x="20" y="18" width="4" height="32" fill="#f97316"/>
+    <rect x="30" y="5" width="4" height="45" fill="#fb923c"/>
+    <rect x="40" y="12" width="4" height="38" fill="#f97316"/>
+    <rect x="50" y="24" width="4" height="26" fill="#ea580c"/>
+    <rect x="60" y="8" width="4" height="42" fill="#fb923c"/>
+    <rect x="70" y="16" width="4" height="34" fill="#f97316"/>
+    <rect x="80" y="2" width="4" height="48" fill="#ea580c"/>
+    <rect x="90" y="20" width="4" height="30" fill="#f97316"/>
+    <rect x="100" y="14" width="4" height="36" fill="#fb923c"/>
+    <rect x="110" y="6" width="4" height="44" fill="#f97316"/>
+  </g>
+
+  <!-- Title & Metadata Typography -->
+  <text x="90" y="740" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-size="44" font-weight="800" letter-spacing="1">${escapeXml(title)}</text>
+  <text x="90" y="845" fill="#a1a1aa" font-family="'JetBrains Mono', monospace, sans-serif" font-size="14" letter-spacing="1.5">${escapeXml(subtitle)}</text>
+  <text x="910" y="845" text-anchor="end" fill="#f97316" font-family="'JetBrains Mono', monospace, sans-serif" font-size="15" font-weight="700">1:1 HI-RES MASTER</text>
+</svg>`;
+  }
+}
+
+function escapeXml(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case "<": return "&lt;";
+      case ">": return "&gt;";
+      case "&": return "&amp;";
+      case "'": return "&apos;";
+      case '"': return "&quot;";
+      default: return c;
+    }
+  });
+}

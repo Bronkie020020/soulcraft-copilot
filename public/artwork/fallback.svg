@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#271912"/>
+      <stop offset="45%" stop-color="#140d0a"/>
+      <stop offset="100%" stop-color="#050507"/>
+    </radialGradient>
+    <radialGradient id="amberGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff5500" stop-opacity="0.85"/>
+      <stop offset="40%" stop-color="#ea580c" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bgGrad)"/>
+  <circle cx="500" cy="500" r="420" fill="url(#amberGlow)" opacity="0.65"/>
+  <g opacity="0.3" stroke="#f97316" stroke-width="1.5" fill="none">
+    <circle cx="500" cy="500" r="460" stroke-dasharray="8 4"/>
+    <circle cx="500" cy="500" r="410"/>
+    <circle cx="500" cy="500" r="360" stroke-dasharray="14 6"/>
+    <circle cx="500" cy="500" r="310"/>
+    <circle cx="500" cy="500" r="260" stroke-dasharray="5 5"/>
+    <circle cx="500" cy="500" r="210"/>
+    <circle cx="500" cy="500" r="160" stroke-dasharray="12 4"/>
+    <circle cx="500" cy="500" r="110"/>
+  </g>
+  <circle cx="500" cy="500" r="115" fill="#0c0a09" stroke="#f97316" stroke-width="3"/>
+  <circle cx="500" cy="500" r="16" fill="#f97316"/>
+  <rect x="70" y="70" width="860" height="860" fill="none" stroke="#f97316" stroke-width="1.5" opacity="0.25"/>
+  <line x1="70" y1="140" x2="930" y2="140" stroke="#f97316" stroke-width="1" opacity="0.2"/>
+  <line x1="70" y1="860" x2="930" y2="860" stroke="#f97316" stroke-width="1" opacity="0.2"/>
+  <text x="90" y="115" fill="#ea580c" font-family="monospace, sans-serif" font-size="16" font-weight="700" letter-spacing="4">SOULCRAFT // SOUNDCLOUD SESSIONS</text>
+  <text x="910" y="115" text-anchor="end" fill="#71717a" font-family="monospace, sans-serif" font-size="14" letter-spacing="2">DENON SC LIVE 2 DIRECT</text>
+  <text x="90" y="740" fill="#ffffff" font-family="sans-serif" font-size="44" font-weight="800" letter-spacing="1">SOULCRAFT SESSIONS</text>
+  <text x="90" y="845" fill="#a1a1aa" font-family="monospace, sans-serif" font-size="14" letter-spacing="1.5">Underground Club Session • 126 BPM</text>
+  <text x="910" y="845" text-anchor="end" fill="#f97316" font-family="monospace, sans-serif" font-size="15" font-weight="700">1:1 HI-RES MASTER</text>
+</svg>

@@ -1,0 +1,282 @@
+[
+  {
+    "id": "rel_1789778967612",
+    "createdAt": "2026-09-19T00:49:27.612Z",
+    "titleSuggestions": [
+      "Soulcraft Sessions 003: Midnight Jack & Rolling Bass",
+      "Warehouse Echoes: Chicago Deep & Raw Transients",
+      "Denon SC Live 2 Cut: Analog Warmth Vol. 1",
+      "The Jackin Groove Tape: Underground 909 Session"
+    ],
+    "selectedTitle": "Soulcraft Sessions 003: Midnight Jack & Rolling Bass",
+    "primaryGenre": "Chicago House",
+    "subGenres": [
+      "Jackin House",
+      "Tech House",
+      "Deep House"
+    ],
+    "tags": [
+      "#ChicagoHouse",
+      "#JackinHouse",
+      "#TechHouse",
+      "#SoulcraftSessions",
+      "#DenonSCLive2",
+      "#UndergroundHouse",
+      "#HouseMusic",
+      "#VinylVibes",
+      "#ClubSession",
+      "#SoundCloudMix"
+    ],
+    "description": "Step into the raw energy of Soulcraft Sessions. Recorded live on the Denon SC Live 2 controller.\n\nFeaturing warm analog basslines, punchy 909 percussive drive, and hypnotic rolling grooves tailored for peak-time dancefloors and late night headphone listening.\n\nTurn up the low end, hit repost if you feel the bounce, and let the groove take over.",
+    "tracklistFormatted": "00:00 | Artist A - Track 1\n04:30 | Artist B - Track 2",
+    "parsedTracks": [
+      {
+        "index": 1,
+        "artist": "Artist A",
+        "title": "Track 1",
+        "timestamp": "00:00",
+        "durationSeconds": 270
+      },
+      {
+        "index": 2,
+        "artist": "Artist B",
+        "title": "Track 2",
+        "timestamp": "04:30",
+        "durationSeconds": 270
+      }
+    ],
+    "artworkPrompts": [
+      {
+        "id": "art_1",
+        "styleName": "Brutalist Warehouse at Dawn",
+        "promptText": "Brutalist concrete warehouse rave at 5 AM, warm amber sunlight piercing through high clerestory windows, heavy atmospheric haze, DJ booth in silhouette with glowing Denon jogwheels, 35mm film photography, Kodak Portra 400 grain, high contrast, 1:1 aspect ratio",
+        "aspectRatio": "1:1",
+        "negativePrompt": "text, watermark, blurry, low resolution, deformed",
+        "generatedImageUrl": "/artwork/cover_rel_1789778967612_1789778967757.svg"
+      },
+      {
+        "id": "art_2",
+        "styleName": "Analog Neon Noir Studio",
+        "promptText": "Close-up macro shot of vintage modular synthesizers, glowing amber LED meters, analog patch cables, hazy smoke reflection on vinyl turntable, cinematic moody studio lighting, 50mm f/1.2 lens, shallow depth of field, 1:1 aspect ratio",
+        "aspectRatio": "1:1",
+        "negativePrompt": "oversaturated, digital render, CGI"
+      },
+      {
+        "id": "art_3",
+        "styleName": "Deep Terrace Golden Hour",
+        "promptText": "Rooftop terrace sound system overlooking industrial canal, golden hour rim lighting, vinyl crates stacked, subtle lens flare, minimalist chic club aesthetic, analog photo grain, 1:1 aspect ratio",
+        "aspectRatio": "1:1"
+      }
+    ],
+    "releaseStrategyTips": [
+      "Post on Thursday at 18:00 CET — peak discovery window before the weekend club rush.",
+      "Clip the transition at 09:00 into a 15-second teaser reel showing the SC Live 2 jogwheel spin.",
+      "Share the tracklist on Instagram Stories with interactive timestamp stickers."
+    ],
+    "socialKit": {
+      "instagramCaption": "Fresh session in the vault 🔊 Raw Chicago jackin drums and rolling basslines straight off the Denon SC Live 2.\n\nTracklist & full 60-min tape live on SoundCloud now! Link in bio. What's your favourite transition?\n\n#HouseMusic #ChicagoHouse #TechHouse #Soulcraft #DenonDJ #SoundCloudMix",
+      "tiktokHooks": [
+        "When the 909 bassline drops at 09:00 😮‍💨",
+        "Denon SC Live 2 standalone session: House grooves only 🔥",
+        "Building that 3 AM Chicago energy..."
+      ],
+      "repostOutreach": "Hey team! Loved your latest repost playlist. Just dropped a fresh high-energy Jackin & Chicago House session with live Denon SC Live 2 flow: 'Soulcraft Sessions 003'. Would love to be considered for your next rotation if it fits your groove!"
+    },
+    "status": "ready"
+  },
+  {
+    "id": "rel_1789778509411",
+    "createdAt": "2026-09-19T00:41:49.411Z",
+    "titleSuggestions": [
+      "Soulcraft Sessions 003: Midnight Jack & Rolling Bass",
+      "Warehouse Echoes: Chicago Deep & Raw Transients",
+      "Denon SC Live 2 Cut: Analog Warmth Vol. 1",
+      "The Jackin Groove Tape: Underground 909 Session"
+    ],
+    "selectedTitle": "Soulcraft Sessions 003: Midnight Jack & Rolling Bass",
+    "primaryGenre": "Chicago House",
+    "subGenres": [
+      "Jackin House",
+      "Tech House",
+      "Deep House"
+    ],
+    "tags": [
+      "#ChicagoHouse",
+      "#JackinHouse",
+      "#TechHouse",
+      "#SoulcraftSessions",
+      "#DenonSCLive2",
+      "#UndergroundHouse",
+      "#HouseMusic",
+      "#VinylVibes",
+      "#ClubSession",
+      "#SoundCloudMix"
+    ],
+    "description": "Step into the raw energy of Soulcraft Sessions. Recorded live on the Denon SC Live 2 controller.\n\nFeaturing warm analog basslines, punchy 909 percussive drive, and hypnotic rolling grooves tailored for peak-time dancefloors and late night headphone listening.\n\nTurn up the low end, hit repost if you feel the bounce, and let the groove take over.",
+    "tracklistFormatted": "00:00 | Dennis Quin - Chant Groove\n04:30 | Kerri Chandler - Atmosphere\n09:00 | Soulcraft - Midnight Jack\n13:30 | Floorplan - Never Grow Old",
+    "parsedTracks": [
+      {
+        "index": 1,
+        "artist": "Dennis Quin",
+        "title": "Chant Groove",
+        "timestamp": "00:00",
+        "durationSeconds": 270
+      },
+      {
+        "index": 2,
+        "artist": "Kerri Chandler",
+        "title": "Atmosphere",
+        "timestamp": "04:30",
+        "durationSeconds": 270
+      },
+      {
+        "index": 3,
+        "artist": "Soulcraft",
+        "title": "Midnight Jack",
+        "timestamp": "09:00",
+        "durationSeconds": 270
+      },
+      {
+        "index": 4,
+        "artist": "Floorplan",
+        "title": "Never Grow Old",
+        "timestamp": "13:30",
+        "durationSeconds": 270
+      }
+    ],
+    "artworkPrompts": [
+      {
+        "id": "art_1",
+        "styleName": "Brutalist Warehouse at Dawn",
+        "promptText": "Brutalist concrete warehouse rave at 5 AM, warm amber sunlight piercing through high clerestory windows, heavy atmospheric haze, DJ booth in silhouette with glowing Denon jogwheels, 35mm film photography, Kodak Portra 400 grain, high contrast, 1:1 aspect ratio",
+        "aspectRatio": "1:1",
+        "negativePrompt": "text, watermark, blurry, low resolution, deformed"
+      },
+      {
+        "id": "art_2",
+        "styleName": "Analog Neon Noir Studio",
+        "promptText": "Close-up macro shot of vintage modular synthesizers, glowing amber LED meters, analog patch cables, hazy smoke reflection on vinyl turntable, cinematic moody studio lighting, 50mm f/1.2 lens, shallow depth of field, 1:1 aspect ratio",
+        "aspectRatio": "1:1",
+        "negativePrompt": "oversaturated, digital render, CGI"
+      },
+      {
+        "id": "art_3",
+        "styleName": "Deep Terrace Golden Hour",
+        "promptText": "Rooftop terrace sound system overlooking industrial canal, golden hour rim lighting, vinyl crates stacked, subtle lens flare, minimalist chic club aesthetic, analog photo grain, 1:1 aspect ratio",
+        "aspectRatio": "1:1"
+      }
+    ],
+    "releaseStrategyTips": [
+      "Post on Thursday at 18:00 CET — peak discovery window before the weekend club rush.",
+      "Clip the transition at 09:00 into a 15-second teaser reel showing the SC Live 2 jogwheel spin.",
+      "Share the tracklist on Instagram Stories with interactive timestamp stickers."
+    ],
+    "socialKit": {
+      "instagramCaption": "Fresh session in the vault 🔊 Raw Chicago jackin drums and rolling basslines straight off the Denon SC Live 2.\n\nTracklist & full 60-min tape live on SoundCloud now! Link in bio. What's your favourite transition?\n\n#HouseMusic #ChicagoHouse #TechHouse #Soulcraft #DenonDJ #SoundCloudMix",
+      "tiktokHooks": [
+        "When the 909 bassline drops at 09:00 😮‍💨",
+        "Denon SC Live 2 standalone session: House grooves only 🔥",
+        "Building that 3 AM Chicago energy..."
+      ],
+      "repostOutreach": "Hey team! Loved your latest repost playlist. Just dropped a fresh high-energy Jackin & Chicago House session with live Denon SC Live 2 flow: 'Soulcraft Sessions 003'. Would love to be considered for your next rotation if it fits your groove!"
+    },
+    "status": "ready"
+  },
+  {
+    "id": "rel_demo_001",
+    "createdAt": "2026-09-19T00:00:00.000Z",
+    "titleSuggestions": [
+      "Soulcraft Sessions 001: Chicago Jack & Analog Warmth",
+      "Warehouse Echoes: Deep Tech & Rolling Transients",
+      "Midnight Jack: Denon SC Live 2 Club Session",
+      "The 909 Groove Tape: Underground Club Flow"
+    ],
+    "selectedTitle": "Soulcraft Sessions 001: Chicago Jack & Analog Warmth",
+    "primaryGenre": "Chicago House",
+    "subGenres": [
+      "Jackin House",
+      "Tech House",
+      "Deep House"
+    ],
+    "tags": [
+      "#ChicagoHouse",
+      "#JackinHouse",
+      "#TechHouse",
+      "#SoulcraftSessions",
+      "#DenonSCLive2",
+      "#UndergroundHouse",
+      "#HouseMusic",
+      "#SoundCloudMix",
+      "#ClubSession",
+      "#VinylVibes"
+    ],
+    "description": "Recorded direct on the Denon SC Live 2 standalone system.\n\nRaw Chicago jackin beats, warm analog basslines, and rolling UK tech grooves designed for high-energy dancefloors.\n\nTurn up the bass and enjoy the ride.",
+    "tracklistFormatted": "00:00 | Dennis Quin - Chant Groove\n04:30 | Kerri Chandler - Atmosphere (Jerome Sydenham Remix)\n09:00 | Soulcraft - Midnight Jack (Original Mix)\n13:30 | Floorplan - Never Grow Old\n18:00 | Catz 'n Dogz - Jack (Club Tool)",
+    "parsedTracks": [
+      {
+        "index": 1,
+        "artist": "Dennis Quin",
+        "title": "Chant Groove",
+        "timestamp": "00:00",
+        "durationSeconds": 270
+      },
+      {
+        "index": 2,
+        "artist": "Kerri Chandler",
+        "title": "Atmosphere (Jerome Sydenham Remix)",
+        "timestamp": "04:30",
+        "durationSeconds": 270
+      },
+      {
+        "index": 3,
+        "artist": "Soulcraft",
+        "title": "Midnight Jack (Original Mix)",
+        "timestamp": "09:00",
+        "durationSeconds": 270
+      },
+      {
+        "index": 4,
+        "artist": "Floorplan",
+        "title": "Never Grow Old",
+        "timestamp": "13:30",
+        "durationSeconds": 270
+      },
+      {
+        "index": 5,
+        "artist": "Catz 'n Dogz",
+        "title": "Jack (Club Tool)",
+        "timestamp": "18:00",
+        "durationSeconds": 270
+      }
+    ],
+    "artworkPrompts": [
+      {
+        "id": "art_sample_1",
+        "styleName": "Brutalist Warehouse at Dawn",
+        "promptText": "Brutalist concrete warehouse rave at 5 AM, warm amber sunlight piercing through high clerestory windows, heavy atmospheric haze, DJ booth in silhouette with glowing Denon jogwheels, 35mm film photography, Kodak Portra 400 grain, high contrast, 1:1 aspect ratio",
+        "aspectRatio": "1:1",
+        "generatedImageUrl": "/artwork/fallback.svg"
+      },
+      {
+        "id": "art_sample_2",
+        "styleName": "Analog Neon Noir Studio",
+        "promptText": "Close-up macro shot of vintage modular synthesizers, glowing amber LED meters, analog patch cables, hazy smoke reflection on vinyl turntable, cinematic moody studio lighting, 50mm f/1.2 lens, shallow depth of field, 1:1 aspect ratio",
+        "aspectRatio": "1:1"
+      }
+    ],
+    "releaseStrategyTips": [
+      "Post on Thursday at 18:00 CET — peak discovery window before the weekend club rush.",
+      "Clip the transition at 09:00 into a 15-second teaser reel showing the SC Live 2 jogwheel spin.",
+      "Share the tracklist on Instagram Stories with interactive timestamp stickers."
+    ],
+    "socialKit": {
+      "instagramCaption": "Fresh session in the vault 🔊 Raw Chicago jackin drums and rolling basslines straight off the Denon SC Live 2.\n\nTracklist & full 60-min tape live on SoundCloud now! Link in bio. What's your favourite transition?\n\n#HouseMusic #ChicagoHouse #TechHouse #Soulcraft #DenonDJ #SoundCloudMix",
+      "tiktokHooks": [
+        "When the 909 bassline drops at 09:00 😮‍💨",
+        "Denon SC Live 2 standalone session: House grooves only 🔥"
+      ],
+      "repostOutreach": "Hey team! Loved your latest repost playlist. Just dropped a fresh high-energy Jackin & Chicago House session with live Denon SC Live 2 flow: 'Soulcraft Sessions 001'. Would love to be considered for your next rotation if it fits your groove!"
+    },
+    "status": "ready"
+  }
+]
